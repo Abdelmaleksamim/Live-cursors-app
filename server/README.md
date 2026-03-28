@@ -1,35 +1,69 @@
-# 🧠 First: What is WebSocket (simple idea)
+🖥 Live Users WebSocket Server
 
-👉 WebSocket = a permanent connection between client and server
+This is a Node.js WebSocket server that tracks multiple users in real-time. Each connected user sends their state (like mouse position), and the server broadcasts all users' states to everyone.
 
-HTTP: request → response → connection closed ❌
-WebSocket: connection opens → stays alive → both sides send anytime ✅
+It can be used for real-time collaborative apps, live cursors, or similar projects.
 
-# So it’s perfect for:
-chat 💬
-live cursor 👆
-real-time dashboard 📊
+📦 Features
+Connect multiple users via WebSocket
+Track each user’s state (e.g., mouse positions)
+Broadcast all users’ states to everyone in real-time
+Assign unique IDs to every user
+Handles user disconnects gracefully
+🛠 Technologies
+Node.js – Backend runtime
+ws – WebSocket server library
+uuid – Generate unique IDs for connections
+HTTP module – To attach the WebSocket server
+⚙️ Installation
+Clone the repo:
+git clone <your-repo-url>
+cd <repo-folder>
+Install dependencies:
+npm install ws uuid
+Run the server:
+node server.js
 
-# 1️⃣ Create servers
+The server will run on port 8000 by default.
+You should see in the console:
 
-const http = require('http')
-const { WebSocketServer } = require('ws')
+WebSocket server is running on port 8000
+🔌 How it Works
+1️⃣ Server Setup
+http creates the server.
+WebSocketServer attaches to HTTP for real-time communication.
+connections stores raw WebSocket connections.
+users stores username and state for each client.
+2️⃣ Connection Flow
+Client connects to ws://localhost:8000?username=Alex
+Server assigns a UUID for the connection
+Server saves the user:
+users[uuid] = { username, state: {} }
+Server broadcasts all users to all clients.
+3️⃣ Sending and Receiving Data
+Client sends data (e.g., mouse { x, y }) → handleMessage()
+Server updates state → broadcasts all users → everyone sees the update
+Client disconnects → handleClose() → user removed → broadcast again
+4️⃣ Functions Breakdown
+Function	Role
+brodcastUsers()	Send the full users object to all clients
+handleMessage(bytes, uuid)	Update a user's state and broadcast
+handleClose(uuid)	Remove disconnected user and broadcast
+🔗 Example Client
 
-👉 Import tools:
+You can connect using a WebSocket frontend, e.g., React with react-use-websocket:
 
-http → normal server
-ws → WebSocket system
+import { useWebSocket } from 'react-use-websocket'
 
-# 2️⃣ Listen for connection
+const { sendJsonMessage, readyState } = useWebSocket(
+  'ws://127.0.0.1:8000?username=Alex'
+)
+sendJsonMessage({ x: 100, y: 200 }) → send mouse coordinates
+Server will broadcast all connected users
+📌 Notes
+Use readyState === 1 to check if the connection is open before sending
+Throttle messages (e.g., mouse movements) to avoid server overload
+Works locally and can be deployed on any Node.js server
+✅ License
 
-wsServer.on("connection", (connection, request) => {
-
-🔥 This is the core of WebSocket
-
-When a client connects:
-
-connection = the socket (communication channel)
-request = info about the connection (URL, headers…)
-
-
-23:48
+MIT License
